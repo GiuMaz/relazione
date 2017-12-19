@@ -30,13 +30,115 @@ IEEEtran.cls version 1.8b and later.
 %\IEEEpubidadjcol
 
 \section{Page Rank Algorithm}
-Describe the pr algo
+PageRank is one of the most known and influential algorithms for computing the
+relevance of web pages, and is used by Google, the most successful search
+engine on the web. The basic idea of PageRank is that the importance of a web
+page depends on the pages that link to it. For instance, we create a web page i
+that includes a hyperlink to web page j. If there are a lot pages also link to
+j, we then consider j is important on the web. On the hand, if j only has one
+in-link, however, this link is from an authoritative web page k (like
+www.google.com, www.yahoo.com, or www.bing.com), we also think j is important
+because k can transfer its popularity or authority to j.
+In general, if a page has k out-links, it will pass on ${\frac{1}{k}}$ of its
+importance to each of the pages that it links to.
+Suppose that there some pages that do not have any
+out-links (we call them dangling nodes), our random surfer will get stuck on
+these pages, and the importance received by these pages cannot be propagated.
+In the other senario, if our web graph has two disconnected components, the
+random surfer that starts from one component has no way to get into the other
+component. All pages in other component will receive 0
+importance.  Dangling nodes and disconnected components actually are quite
+common on the Internet, considering the large scale of the web. In order to
+deal with these two problems, a positive constant d between 0 and 1 (typically
+0.15) is introduced, which we call the teleport parameter.
+A smaller, but positive percentage of the time, the surfer will dump the
+current page and choose arbitrarily a different page from the web, and 
+teleports” there. The teleport parameter d reflects the probability that the
+surfer quits the current page and “teleports” to a new one. Since every page
+can be teleported, each page has 1 probability to be chosen.
+Page rank can be implemented in many different ways, the one that we use as
+reference was the push-based algorithm as seen in \cite{PR}.
+We report the pseudo code:
+% ......
+The main idea is to compute a residual for every node, based on the ingoing
+edges. When the residual is greater than a fixed threshold the
+page rank value related to that residual is increased, and so the residual of
+the neighbourn of the node must be recomputed. The algorithm uses a queue to
+store the node that must be updated.
 
-\section{Parallel implementation}
-\section{Result}
-\section{Test}
-\section{Conclusion}
-The conclusion goes here.
+\section{Parallel implementation} 
+For the parallel algorithm we use the Hornet framework. Hornet provides
+usefull and efficent primivites for graph computation on GPUs.
+- descrizione pseudocodice
+- relazionoe primitive <=> pseudocodice
+- relazione con il codice sequenziale
+- nota sull'uso della coda... 
+
+\section{Experimental Results} 
+\subsubsection{Testing Environment}
+We tested our implementation on a AMD Phenom(tm) II X6 1055T with 8gb RAM and 
+a GeForce GTX 780.
+We compare the performances of our algorithm, a sequential implementation and
+another GPU implementation that relied on the Gunrock framework.
+\subsubsection{dataset}
+We selected some real world graphs with different features such as
+nodes number, edges number and average degree.
+Must be noted that we removed all the self loop from the graph, because a self
+loop in page rank doesn't have much sense, as it makes no sense, for a node,
+to give influence to itself.
+A complete description of the graphs can be found in table \ref{graph}.
+We set 0.001 as threshold for the algorithm and 0.85 as the teleport parameter.
+
+\begin{table}[h]
+\centering
+\setlength\tabcolsep{5pt}
+\caption{Graph Features}
+\label{graph}
+\begin{tabular}{|c|r|r|c|c|}
+\hline
+\multicolumn{1}{|c|}{\bfseries Graph Name} & 
+\multicolumn{1}{|c|}{\bfseries Nodes} & 
+\multicolumn{1}{|c|}{\bfseries Edges} & 
+    \multicolumn{1}{|p{0.8cm}|}{\centering \bfseries AVG\\ Degree} & 
+\multicolumn{1}{|c|}{\bfseries File size} \\
+\hline
+belgium\_osm\_nsl.mtx*       &  1.441.295  & 3.099.940   & 2,1        & 22M       \\
+cit-Patents\_nsl.mtx*        &  3.774.768  & 16.518.947  & 4,3        & 250M      \\
+delaunay\_n21\_nsl.mtx*      &  2.097.152  & 12.582.816  & 6          & 90M       \\
+delaunay\_n23\_nsl.mtx*      &  8.388.608  & 50.331.568  & 6          & 378M      \\
+delaunay\_n24\_nsl.mtx*      &  16.777.216 & 100.663.202 & 6          & 801M      \\
+great-britain\_osm\_nsl.mtx* &  7.733.822  & 16.313.034  & 2,1        & 2123M     \\
+hollywood-2009\_nsl.mtx*     &  1.139.905  & 112.751.422 & 98,9       & 757M      \\
+italy\_osm\_nsl.mtx*         &  6.686.493  & 14.027.956  & 2,1        & 105M      \\
+kron\_g500-logn21\_nsl.mtx*  &  2.097.152  & 182.081.864 & 86,8       & 1.5G      \\
+ljournal-2008\_nsl.mtx*      &  5.363.260  & 77.991.514  & 14,5       & 1.2G      \\
+rgg\_n\_2\_23\_s0\_nsl.mtx*  &  8.388.608  & 127.002.786 & 15,1       & 953M      \\
+roadNet-CA\_nsl.mtx*         &  1.971.281  & 5.533.214   & 2,8        & 40M       \\
+road\_usa\_nsl.mtx*          &  23.947.347 & 57.708.624  & 2,4        & 470M      \\
+soc-LiveJournal1\_nsl.mtx*   &  4.847.571  & 68.475.391  & 14,1       & 958M      \\
+wb-edu\_nsl.mtx*             &  9.845.725  & 55.311.626  & 5,6        & 834M      \\
+webbase-1M\_nsl.mtx*         &  1.000.005  & 2.105.531   & 2,1        & 52M       \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{results}
+All the experimental results are shown in table \ref{experiments}.
+The results make clear that the parallel implementation can grant meaningfull
+speed-up over the sequential implementation. The speed-up isn't fixed but
+depends on the graph feature.
+The more interesting speed-up is related to Gunrock, Hornet performs better
+in nearly all the graph with a speed-up around 5x, except for some graphs in
+which the permormance are similar, or show a realy high speed-up (more than
+20x).
+We have some theories regarding the speed-up, or lack off. First, we notice
+that an high average degree result in a realy similar execution time.
+This is probably related to the fact that both the algorithm use an ${atomicAdd}$
+instruction to calculate the new page\_rank, so the overhead of this function
+reduces the advantage of Hornet over Gunrock.
+Second, we notice that when the speed up is realy high the number of iteration
+of the two algorithm are strongly different. That probably due to better 
+implemetation choices in our algorithm w.r.t. the Gunrock one.
 
 \begin{table}[]
 \centering
@@ -74,38 +176,10 @@ webbase-1M\_nsl.mtx*         & 237,4          & 27,6       & 759,85      & 28   
 \end{tabular}
 \end{table}
 
-\begin{table}[]
-\centering
-\setlength\tabcolsep{5pt}
-\caption{My caption}
-\label{my-label}
-\begin{tabular}{|c|r|r|c|c|}
-\hline
-\multicolumn{1}{|c|}{\bfseries Graph Name} & 
-\multicolumn{1}{|c|}{\bfseries Nodes} & 
-\multicolumn{1}{|c|}{\bfseries Edges} & 
-\multicolumn{1}{|c|}{\bfseries AVG Degree} & 
-\multicolumn{1}{|c|}{\bfseries File size} \\
-\hline
-belgium\_osm\_nsl.mtx*       &  1.441.295  & 3.099.940   & 2,1        & 22M       \\
-cit-Patents\_nsl.mtx*        &  3.774.768  & 16.518.947  & 4,3        & 250M      \\
-delaunay\_n21\_nsl.mtx*      &  2.097.152  & 12.582.816  & 6          & 90M       \\
-delaunay\_n23\_nsl.mtx*      &  8.388.608  & 50.331.568  & 6          & 378M      \\
-delaunay\_n24\_nsl.mtx*      &  16.777.216 & 100.663.202 & 6          & 801M      \\
-great-britain\_osm\_nsl.mtx* &  7.733.822  & 16.313.034  & 2,1        & 2123M     \\
-hollywood-2009\_nsl.mtx*     &  1.139.905  & 112.751.422 & 98,9       & 757M      \\
-italy\_osm\_nsl.mtx*         &  6.686.493  & 14.027.956  & 2,1        & 105M      \\
-kron\_g500-logn21\_nsl.mtx*  &  2.097.152  & 182.081.864 & 86,8       & 1.5G      \\
-ljournal-2008\_nsl.mtx*      &  5.363.260  & 77.991.514  & 14,5       & 1.2G      \\
-rgg\_n\_2\_23\_s0\_nsl.mtx*  &  8.388.608  & 127.002.786 & 15,1       & 953M      \\
-roadNet-CA\_nsl.mtx*         &  1.971.281  & 5.533.214   & 2,8        & 40M       \\
-road\_usa\_nsl.mtx*          &  23.947.347 & 57.708.624  & 2,4        & 470M      \\
-soc-LiveJournal1\_nsl.mtx*   &  4.847.571  & 68.475.391  & 14,1       & 958M      \\
-wb-edu\_nsl.mtx*             &  9.845.725  & 55.311.626  & 5,6        & 834M      \\
-webbase-1M\_nsl.mtx*         &  1.000.005  & 2.105.531   & 2,1        & 52M       \\
-\hline
-\end{tabular}
-\end{table}
+\section{Conclusion}
+hornet è figo ( e soprattuto più figo di gurnrock)
+vantaggi di hornet
+svantaggi di hornet
 
 \begin{thebibliography}{1}
 
@@ -116,97 +190,3 @@ J. J. Whang, A. Lenharth, I. S. Dhillon, and K. Pingali, \emph{Scalable Data-dri
 
 \end{document}
 
-
-% An example of a floating figure using the graphicx package.
-% Note that \label must occur AFTER (or within) \caption.
-% For figures, \caption should occur after the \includegraphics.
-% Note that IEEEtran v1.7 and later has special internal code that
-% is designed to preserve the operation of \label within \caption
-% even when the captionsoff option is in effect. However, because
-% of issues like this, it may be the safest practice to put all your
-% \label just after \caption rather than within \caption{}.
-%
-% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
-% option should be used if it is desired that the figures are to be
-% displayed while in draft mode.
-%
-%\begin{figure}[!t]
-%\centering
-%\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex; or what has been declared
-% via \DeclareGraphicsExtensions.
-%\caption{Simulation results for the network.}
-%\label{fig_sim}
-%\end{figure}
-
-% Note that the IEEE typically puts floats only at the top, even when this
-% results in a large percentage of a column being occupied by floats.
-
-
-% An example of a double column floating figure using two subfigures.
-% (The subfig.sty package must be loaded for this to work.)
-% The subfigure \label commands are set within each subfloat command,
-% and the \label for the overall figure must come after \caption.
-% \hfil is used as a separator to get equal spacing.
-% Watch out that the combined width of all the subfigures on a 
-% line do not exceed the text width or a line break will occur.
-%
-%\begin{figure*}[!t]
-%\centering
-%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
-%\label{fig_first_case}}
-%\hfil
-%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
-%\label{fig_second_case}}
-%\caption{Simulation results for the network.}
-%\label{fig_sim}
-%\end{figure*}
-%
-% Note that often IEEE papers with subfigures do not employ subfigure
-% captions (using the optional argument to \subfloat[]), but instead will
-% reference/describe all of them (a), (b), etc., within the main caption.
-% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
-% labels, the optional argument to \subfloat must be present. If a
-% subcaption is not desired, just leave its contents blank,
-% e.g., \subfloat[].
-
-
-% An example of a floating table. Note that, for IEEE style tables, the
-% \caption command should come BEFORE the table and, given that table
-% captions serve much like titles, are usually capitalized except for words
-% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
-% and up, which are usually not capitalized unless they are the first or
-% last word of the caption. Table text will default to \footnotesize as
-% the IEEE normally uses this smaller font for tables.
-% The \label must come after \caption as always.
-%
-%\begin{table}[!t]
-%% increase table row spacing, adjust to taste
-%\renewcommand{\arraystretch}{1.3}
-% if using array.sty, it might be a good idea to tweak the value of
-% \extrarowheight as needed to properly center the text within the cells
-%\caption{An Example of a Table}
-%\label{table_example}
-%\centering
-%% Some packages, such as MDW tools, offer better commands for making tables
-%% than the plain LaTeX2e tabular which is used here.
-%\begin{tabular}{|c||c|}
-%\hline
-%One & Two\\
-%\hline
-%Three & Four\\
-%\hline
-%\end{tabular}
-%\end{table}
-
-
-% Note that the IEEE does not put floats in the very first column
-% - or typically anywhere on the first page for that matter. Also,
-% in-text middle ("here") positioning is typically not used, but it
-% is allowed and encouraged for Computer Society conferences (but
-% not Computer Society journals). Most IEEE journals/conferences use
-% top floats exclusively. 
-% Note that, LaTeX2e, unlike IEEE journals/conferences, places
-% footnotes above bottom floats. This can be corrected via the
-% \fnbelowfloat command of the stfloats package.
