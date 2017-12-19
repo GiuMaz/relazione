@@ -1,0 +1,212 @@
+\documentclass[journal]{IEEEtran}
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+\title{Page Rank implemented with Hornet}
+\author{Giulio~Mazzi (VR406936), Samuele~Germiniani(VR409637)}
+
+% The paper headers
+\markboth{}%
+{}
+\maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+\begin{abstract}
+Discussion of the parallel implementation of the Page Rank algorithm 
+in CUDA, using the Hornet framework
+\end{abstract}
+
+\section{Introduction}
+\IEEEPARstart{T}{his} demo file is intended to serve as a ``starter file''
+for IEEE journal papers produced under \LaTeX\ using
+IEEEtran.cls version 1.8b and later.
+% You must have at least 2 lines in the paragraph with the drop letter
+% (should never be an issue)
+
+% needed in second column of first page if using \IEEEpubid
+%\IEEEpubidadjcol
+
+\section{Page Rank Algorithm}
+Describe the pr algo
+
+\section{Parallel implementation}
+\section{Result}
+\section{Test}
+\section{Conclusion}
+The conclusion goes here.
+
+\begin{table}[]
+\centering
+\setlength\tabcolsep{1.5pt}
+\caption{Experimental results}
+\label{experiments}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+\multicolumn{1}{|p{3.5cm}|}{\bfseries \centering Graph Name} & 
+\multicolumn{1}{|p{2cm}|}{\bfseries \centering Sequential(ms)} & 
+\multicolumn{1}{|p{2cm}|}{\bfseries \centering Hornet(ms)} & 
+\multicolumn{1}{|p{2cm}|}{\bfseries \centering Gunrock(ms)} & 
+\multicolumn{1}{|p{2cm}|}{\bfseries \centering Hornet\\ iterations} & 
+\multicolumn{1}{|p{2cm}|}{\bfseries \centering Gunrock\\ iterations} & 
+\multicolumn{1}{|p{2cm}|}{\bfseries \centering Sequential\\ speedup} & 
+\multicolumn{1}{|p{2.5cm}|}{\bfseries \centering Gunrock/Hornet\\ speedup} \\
+\hline
+belgium\_osm\_nsl.mtx*       & 1826,8         & 34,5       & 193,27      & 30                & 34                 & 52,95              & 5,60                   \\
+cit-Patents\_nsl.mtx*        & 2254,2         & 93,4       & 952,69      & 6                 & 38                 & 24,13              & 10,20                  \\
+delaunay\_n21\_nsl.mtx*      & 4321           & 94,7       & 544,03      & 30                & 32                 & 45,63              & 5,74                   \\
+delaunay\_n23\_nsl.mtx*      & 16761,4        & 352        & 2123,37     & 30                & 33                 & 47,62              & 6,03                   \\
+delaunay\_n24\_nsl.mtx*      & 33636,9        & 700,2      & 4216,64     & 30                & 33                 & 48,04              & 6,02                   \\
+great-britain\_osm\_nsl.mtx* & 10052,7        & 163,3      & 902,54      & 30                & 34                 & 61,56              & 5,53                   \\
+hollywood-2009\_nsl.mtx*     & 23527,3        & 649,2      & 617,56      & 30                & 39                 & 36,24              & 0,95                   \\
+italy\_osm\_nsl.mtx*         & 6863,5         & 135,4      & 780,32      & 30                & 34                 & 50,69              & 5,76                   \\
+kron\_g500-logn21\_nsl.mtx*  & 99557,2        & 3070,8     & 3562,91     & 28                & 33                 & 32,42              & 1,16                   \\
+ljournal-2008\_nsl.mtx*      & 26369          & 564,6      & 1061,6      & 26                & 40                 & 46,70              & 1,88                   \\
+rgg\_n\_2\_23\_s0\_nsl.mtx*  & 33779,3        & 894,8      & 938,46      & 30                & 33                 & 37,75              & 1,05                   \\
+roadNet-CA\_nsl.mtx*         & 2407,1         & 51,3       & 332,09      & 30                & 35                 & 46,92              & 6,47                   \\
+road\_usa\_nsl.mtx*          & 39578,1        & 533,3      & 3340,77     & 30                & 35                 & 74,21              & 6,26                   \\
+soc-LiveJournal1\_nsl.mtx*   & 30524,5        & 717        & 1369,89     & 26                & 39                 & 42,57              & 1,91                   \\
+wb-edu\_nsl.mtx*             & 9221,9         & 351,3      & 719,34      & 23                & 39                 & 26,25              & 2,05                   \\
+webbase-1M\_nsl.mtx*         & 237,4          & 27,6       & 759,85      & 28                & 41                 & 8,60               & 27,53                 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[]
+\centering
+\setlength\tabcolsep{5pt}
+\caption{My caption}
+\label{my-label}
+\begin{tabular}{|c|r|r|c|c|}
+\hline
+\multicolumn{1}{|c|}{\bfseries Graph Name} & 
+\multicolumn{1}{|c|}{\bfseries Nodes} & 
+\multicolumn{1}{|c|}{\bfseries Edges} & 
+\multicolumn{1}{|c|}{\bfseries AVG Degree} & 
+\multicolumn{1}{|c|}{\bfseries File size} \\
+\hline
+belgium\_osm\_nsl.mtx*       &  1.441.295  & 3.099.940   & 2,1        & 22M       \\
+cit-Patents\_nsl.mtx*        &  3.774.768  & 16.518.947  & 4,3        & 250M      \\
+delaunay\_n21\_nsl.mtx*      &  2.097.152  & 12.582.816  & 6          & 90M       \\
+delaunay\_n23\_nsl.mtx*      &  8.388.608  & 50.331.568  & 6          & 378M      \\
+delaunay\_n24\_nsl.mtx*      &  16.777.216 & 100.663.202 & 6          & 801M      \\
+great-britain\_osm\_nsl.mtx* &  7.733.822  & 16.313.034  & 2,1        & 2123M     \\
+hollywood-2009\_nsl.mtx*     &  1.139.905  & 112.751.422 & 98,9       & 757M      \\
+italy\_osm\_nsl.mtx*         &  6.686.493  & 14.027.956  & 2,1        & 105M      \\
+kron\_g500-logn21\_nsl.mtx*  &  2.097.152  & 182.081.864 & 86,8       & 1.5G      \\
+ljournal-2008\_nsl.mtx*      &  5.363.260  & 77.991.514  & 14,5       & 1.2G      \\
+rgg\_n\_2\_23\_s0\_nsl.mtx*  &  8.388.608  & 127.002.786 & 15,1       & 953M      \\
+roadNet-CA\_nsl.mtx*         &  1.971.281  & 5.533.214   & 2,8        & 40M       \\
+road\_usa\_nsl.mtx*          &  23.947.347 & 57.708.624  & 2,4        & 470M      \\
+soc-LiveJournal1\_nsl.mtx*   &  4.847.571  & 68.475.391  & 14,1       & 958M      \\
+wb-edu\_nsl.mtx*             &  9.845.725  & 55.311.626  & 5,6        & 834M      \\
+webbase-1M\_nsl.mtx*         &  1.000.005  & 2.105.531   & 2,1        & 52M       \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{thebibliography}{1}
+
+\bibitem{PR}
+J. J. Whang, A. Lenharth, I. S. Dhillon, and K. Pingali, \emph{Scalable Data-driven PageRank: Algorithms, System Issues, and Lessons Learned}, University of Texas at Austin, Austin TX 78712, USA
+
+\end{thebibliography}
+
+\end{document}
+
+
+% An example of a floating figure using the graphicx package.
+% Note that \label must occur AFTER (or within) \caption.
+% For figures, \caption should occur after the \includegraphics.
+% Note that IEEEtran v1.7 and later has special internal code that
+% is designed to preserve the operation of \label within \caption
+% even when the captionsoff option is in effect. However, because
+% of issues like this, it may be the safest practice to put all your
+% \label just after \caption rather than within \caption{}.
+%
+% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
+% option should be used if it is desired that the figures are to be
+% displayed while in draft mode.
+%
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure}
+
+% Note that the IEEE typically puts floats only at the top, even when this
+% results in a large percentage of a column being occupied by floats.
+
+
+% An example of a double column floating figure using two subfigures.
+% (The subfig.sty package must be loaded for this to work.)
+% The subfigure \label commands are set within each subfloat command,
+% and the \label for the overall figure must come after \caption.
+% \hfil is used as a separator to get equal spacing.
+% Watch out that the combined width of all the subfigures on a 
+% line do not exceed the text width or a line break will occur.
+%
+%\begin{figure*}[!t]
+%\centering
+%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
+%\label{fig_first_case}}
+%\hfil
+%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
+%\label{fig_second_case}}
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure*}
+%
+% Note that often IEEE papers with subfigures do not employ subfigure
+% captions (using the optional argument to \subfloat[]), but instead will
+% reference/describe all of them (a), (b), etc., within the main caption.
+% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
+% labels, the optional argument to \subfloat must be present. If a
+% subcaption is not desired, just leave its contents blank,
+% e.g., \subfloat[].
+
+
+% An example of a floating table. Note that, for IEEE style tables, the
+% \caption command should come BEFORE the table and, given that table
+% captions serve much like titles, are usually capitalized except for words
+% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
+% and up, which are usually not capitalized unless they are the first or
+% last word of the caption. Table text will default to \footnotesize as
+% the IEEE normally uses this smaller font for tables.
+% The \label must come after \caption as always.
+%
+%\begin{table}[!t]
+%% increase table row spacing, adjust to taste
+%\renewcommand{\arraystretch}{1.3}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+%\caption{An Example of a Table}
+%\label{table_example}
+%\centering
+%% Some packages, such as MDW tools, offer better commands for making tables
+%% than the plain LaTeX2e tabular which is used here.
+%\begin{tabular}{|c||c|}
+%\hline
+%One & Two\\
+%\hline
+%Three & Four\\
+%\hline
+%\end{tabular}
+%\end{table}
+
+
+% Note that the IEEE does not put floats in the very first column
+% - or typically anywhere on the first page for that matter. Also,
+% in-text middle ("here") positioning is typically not used, but it
+% is allowed and encouraged for Computer Society conferences (but
+% not Computer Society journals). Most IEEE journals/conferences use
+% top floats exclusively. 
+% Note that, LaTeX2e, unlike IEEE journals/conferences, places
+% footnotes above bottom floats. This can be corrected via the
+% \fnbelowfloat command of the stfloats package.
