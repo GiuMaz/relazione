@@ -2,7 +2,7 @@
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
 
-
+%\usepackage[margin=1in]{geometry}
 \begin{document}
 \title{Page Rank implemented with Hornet}
 \author{Giulio~Mazzi (VR406936), Samuele~Germiniani(VR409637)}
@@ -58,17 +58,72 @@ surfer quits the current page and “teleports” to a new one. Since every page
 can be teleported, each page has 1 probability to be chosen.
 Page rank can be implemented in many different ways, the one that we use as
 reference was the push-based algorithm as seen in \cite{PR}.
-We report the pseudo code:
-% ......
+We report the pseudo code in table \ref{pseudocode}.\\
 The main idea is to compute a residual for every node, based on the ingoing
 edges. When the residual is greater than a fixed threshold the
 page rank value related to that residual is increased, and so the residual of
 the neighbourn of the node must be recomputed. The algorithm uses a queue to
 store the node that must be updated.
+The sequential implementation of our code implement this tecnique, with the
+CPU interface of Hornet.
 
+\begin{table}[]
+\centering
+\caption{Graph Features}
+\label{pseudocode}
+\normalsize
+\begin{tabular}{|l|}
+\hline
+\begin{tabular}[l]{l @{}c@{}}
+Push-based PageRank \\
+\textbf{Input:} graph G = (V, E), $\alpha$, $\epsilon$  \\
+\textbf{Output:} PageRank x \\
+1: Initialize $x = (1 \mbox{-} \alpha)e$ \\
+2: Initialize r = 0 \\
+3:$for$ $ v \in  V do $\\
+4:\quad $for$ $ w \in  S_v $ do \\
+5: \quad \quad $r_v$  = $r_v  + \frac{1}{|T_w|}$\\
+6: \quad end for \\
+7:\quad $r_v  = (1  \mbox{-} \alpha )\alpha r_v$ \\
+8: end for \\
+9:$ for$ $ v \in  V do$\\
+10:\quad worklist.push(v) \\
+11: end for \\
+12: while !worklist.isEmpty do \\
+13: \quad $v = worklist.pop()$ \\
+14:\quad $x^{new}_v = x_v + r_v$ \\
+15:\quad $for$ $ w \in  T_v$ $  do$ \\
+16:\quad \quad $r^{old}_w = r_w$ \\
+17:\quad \quad $r_w  = r_w  + \frac{r_v \alpha }{|T_v |}$\\
+18:\quad \quad if $r_w  \geq \epsilon$  and  $r^{old}_w < \epsilon$  then \\
+19:\quad \quad \quad worklist.push(w) \\
+20: \quad \quad  end if \\
+21:\quad  end for \\
+22:\quad $r_v  = 0$ \\
+23: end while \\
+24:$ x = \frac{x}{\parallel x \parallel _1}$\\
+\end{tabular} \\ \hline
+\end{tabular}
+\end{table}
 \section{Parallel implementation} 
 For the parallel algorithm we use the Hornet framework. Hornet provides
 usefull and efficent primivites for graph computation on GPUs.
+We start with an overview of our code, and later focus on the ${run}$ function
+that implement the core of the algorithm.
+Our code has some methods for initilizing the graph and the required data
+structure (using the class constructor), and also for setting the parameter
+defining the behaviourus of the algorithm (teleport parameter and threshold,
+using the ${set\_parameters}$ method).
+The algorithm also implements a sequential version of page rank (
+${evaluate\_sequential\_algorithm}$, that uses the same graph set in the constructor)
+and a method (${validate}$) that compare the sequential and the parallel
+results of the algorithms, usefull for testing.
+We also provide a testing main, that takes a graph from the standard input
+and runs the algorithm on it, reporting a summary of the result.
+
+
+
+
 - descrizione pseudocodice
 - relazionoe primitive <=> pseudocodice
 - relazione con il codice sequenziale
