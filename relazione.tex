@@ -1,7 +1,7 @@
 \documentclass[journal]{IEEEtran}
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
-
+\usepackage{graphicx}
 %\usepackage[margin=1in]{geometry}
 \begin{document}
 \title{Page Rank implemented with Hornet}
@@ -41,6 +41,8 @@ www.google.com, www.yahoo.com, or www.bing.com), we also think j is important
 because k can transfer its popularity or authority to j.
 In general, if a page has k out-links, it will pass on ${\frac{1}{k}}$ of its
 importance to each of the pages that it links to.
+A picture describing the transition graph can be seen in the following figure\\
+\includegraphics[scale=3.5]{./rappresentazione.png}\\
 Suppose that there some pages that do not have any
 out-links (we call them dangling nodes), our random surfer will get stuck on
 these pages, and the importance received by these pages cannot be propagated.
@@ -69,7 +71,7 @@ CPU interface of Hornet.
 
 \begin{table}[]
 \centering
-\caption{Graph Features}
+\caption{Pseudocode of the sequential algorithm}
 \label{pseudocode}
 \normalsize
 \begin{tabular}{|l|}
@@ -106,6 +108,27 @@ Push-based PageRank \\
 \end{tabular}
 \end{table}
 \section{Parallel implementation} 
+\begin{table}[]
+\centering
+\caption{Pseudocode of the paralle algorithm}
+\label{parallel}
+\normalsize
+\begin{tabular}{|l|}
+\hline
+\begin{tabular}[l]{l @{}c@{}}
+$InitValue()$\\
+$bool over\_residual = true$\\
+$while ( over\_residual) \{$\\
+\quad $updatePageRank(actualResidual) $\\
+\quad $newResidual = propagatePageRank(actualResidua)$\\
+\quad $actualResidual = moveResidual(newResidual)$\\
+\quad $over\_residual = computeThreshold(actualResidual)$\\
+\}\\
+$normalizePageRank()$
+\end{tabular} \\ \hline
+\end{tabular}
+\end{table}
+
 For the parallel algorithm we use the Hornet framework. Hornet provides
 usefull and efficent primivites for graph computation on GPUs.
 We start with an overview of our code, and later focus on the ${run}$ function
@@ -119,15 +142,37 @@ ${evaluate\_sequential\_algorithm}$, that uses the same graph set in the constru
 and a method (${validate}$) that compare the sequential and the parallel
 results of the algorithms, usefull for testing.
 We also provide a testing main, that takes a graph from the standard input
-and runs the algorithm on it, reporting a summary of the result.
+and runs the algorithm on it, reporting a summary of the result.\\
 
+InitValue(), as the name suggests it initialize all the data structure.
+The algorithm keep cycling until the sum of the residual are inferior of the
+threshold. \\
 
+The algorithm use two vector for storing the residual, one ($actualResidual$)
+contains the residual that should be added to the page rank final value,
+and $newResidual$ that is the new residual computated after the update of
+the page rank.\\
+At the beginning of the cycle the redidual previously calculated are moved
+to the actual page\_rank value, after that a new residual must be computed,
+so every node propagates its $actualResidual$ to all the neighbourns. This is
+the most expensive step, as it uses an atomic operation for the sum.
+after that the newResidual computetation is terminated and this new residual
+becomes the actual residual.\\
+In the end, we check if the total sum of the residual is below the
+threshold, if so the computation is terminated, otherwise the loop restarts.
+After the loop, the page rank must be normalized, with a reduce function we
+calculate the total sum of the page rank and we divide all the elements by
+this value, so the total sum becomes 1.\\
+All the previously mentioned steps, are implemented in a clear a concise
+way using $forAllVertices$ and $forAllEdges$ functions, which take the graph,
+an operator describing the computation step and some required data like the
+residual vector.\\
+Lastly we underline the fact that our initial implementation use a queue
+like the sequential step, but we realized that that result in worse performance
+compared to computing all the node at every iteration step, because the
+overhead required to mantain a shared queue overcomes the benefit of reducing
+the node that must be recomputed.
 
-
-- descrizione pseudocodice
-- relazionoe primitive <=> pseudocodice
-- relazione con il codice sequenziale
-- nota sull'uso della coda... 
 
 \section{Experimental Results} 
 \subsubsection{Testing Environment}
