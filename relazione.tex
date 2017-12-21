@@ -20,14 +20,21 @@ in CUDA, using the Hornet framework
 \end{abstract}
 
 \section{Introduction}
-\IEEEPARstart{T}{his} demo file is intended to serve as a ``starter file''
-for IEEE journal papers produced under \LaTeX\ using
-IEEEtran.cls version 1.8b and later.
-% You must have at least 2 lines in the paragraph with the drop letter
-% (should never be an issue)
-
-% needed in second column of first page if using \IEEEpubid
-%\IEEEpubidadjcol
+\IEEEPARstart{T}{his} 
+report is meant to describe our work related to the development of the 
+algorithm page rank using Hornet. Hornet is a framework for fast development
+of graph algorithm in CUDA.
+First we will introduce the page rank algorithm, showing a sequential 
+implementation. After that we discuss the details of the parallel version
+of the algorithm, underlining the use of Hornet API.\\
+Finally we present some experimental results concerning the sequential and
+the parallel performances. We also compare our parallel implementation with
+Gunrock, that is another framework for graph processing on the GPUs, with a
+similar purpose of Hornet.
+These results show how Hornet performs significally better than the sequential
+algorithm and Gunrock.
+In the end we discuss the advantages and disadvantages of Hornet, w.r.t 
+performance, development time and portability.
 
 \section{Page Rank Algorithm}
 PageRank is one of the most known and influential algorithms for computing the
@@ -277,9 +284,19 @@ webbase-1M\_nsl.mtx*         & 237,4          & 27,6       & 759,85      & 28   
 \end{table}
 
 \section{Conclusion}
-hornet è figo ( e soprattuto più figo di gurnrock)
-vantaggi di hornet
-svantaggi di hornet
+As the experiments clearly prove, Hornet can grant a meaningfull speed-up,
+while keeping low the development time.
+Using Hornet is easy compared to writing native CUDA code, expecially because
+graph are difficult data structure to work with GPUs, as they usually present 
+many forms of irregularities. APIs like $forAllVertices$ provide the developer
+with a powerfull abstraction over the data structure of the graph, that can
+also be fine tuned with a personalized structure for the operation to
+perform in every vertices. Currently Hornet lacks a real documentation, making
+harder to adopt the framework. The only actual way of learning the framework
+is to study the already implemented algorithms, that are available along
+the framework.
+As a last remark, must be noted that Hornet is based on really recent tecnologies,
+like CUDA 9 and c++14, which decrease the portability of the framework.
 
 \begin{thebibliography}{1}
 
